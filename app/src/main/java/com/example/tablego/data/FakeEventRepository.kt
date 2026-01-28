@@ -1,11 +1,14 @@
 package com.example.tablego.data
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+
 // object = singleton
 // one source of truth for events
 //and every VM uses the same data
-object FakeEventRepository {
+class FakeEventRepository : EventRepository {
 
-    private val events = listOf(
+    private val sampleEvents = listOf(
         Event(
             id = 1,
             name = "Anime Convention",
@@ -29,14 +32,31 @@ object FakeEventRepository {
         )
     )
 
+    private val eventsFlow = MutableStateFlow(sampleEvents)
+
+
     // returns all events to event list screen
     // enforces encapsulation
-    fun getEvents(): List<Event> {
-        return events
-    }
+    override fun getEvents(): Flow<List<Event>> = eventsFlow
+
 
     // returns one event to event details screen
-    fun getEventById(id: Int): Event? {
-        return events.find { it.id == id }
+    override fun getEventById(id: Int): Event? {
+        return eventsFlow.value.find { it.id == id }
+    }
+
+    override fun searchEvents(
+        query: String,
+        month: String,
+        maxCost: Int,
+        year: Int
+    ): Flow<List<Event>> {
+        val filtered = eventsFlow.value.filter { event ->
+            (query.isBlank() || event.name.contains(query, true) || event.description.contains(query, true)) &&
+                    (month.isBlank() || event.date.contains(month)) &&
+                    (event.cost <= maxCost) &&
+                    (event.date.contains(year.toString()))
+        }
+        return MutableStateFlow(filtered)
     }
 }

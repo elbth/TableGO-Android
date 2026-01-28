@@ -22,13 +22,11 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -98,14 +96,17 @@ fun EventListScreen(
     var showFilterCard by remember { mutableStateOf(false) }
     var maxCost by remember { mutableStateOf("") }
     var query by remember { mutableStateOf("") }
+    var selectedYear by remember { mutableStateOf(0) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .padding(8.dp)
+    ) {
 
         // Top row: Search + Filter + Reset
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -117,8 +118,9 @@ fun EventListScreen(
                     viewModel.applyFilters(
                         searchQuery = query,
                         month = selectedMonth,
-                        maxCost = maxCost.toIntOrNull() ?: Int.MAX_VALUE
-                    ) // UPDATED
+                        maxCost = maxCost.toIntOrNull() ?: Int.MAX_VALUE,
+                        year = selectedYear
+                    )
                 },
                 label = { Text("Search events") },
                 modifier = Modifier.weight(1f)
@@ -135,12 +137,15 @@ fun EventListScreen(
                     query = ""
                     selectedMonth = ""
                     maxCost = ""
+                    selectedYear = 0
                     viewModel.resetFilters() // NEW
                 }
             ) {
                 Text("Reset")
             }
         }
+
+        Spacer(Modifier.height(8.dp))
 
         // FILTER CARD (Expandable)
         if (showFilterCard) {
@@ -159,7 +164,8 @@ fun EventListScreen(
                     MonthDropdown(
                         selectedMonth = selectedMonth,
                         onMonthSelected = { month ->
-                            selectedMonth = month }
+                            selectedMonth = month
+                        }
                     )
 
                     // Max cost input
@@ -180,7 +186,8 @@ fun EventListScreen(
                             viewModel.applyFilters(
                                 searchQuery = query,
                                 month = selectedMonth,
-                                maxCost = costInt
+                                maxCost = costInt,
+                                year = selectedYear
                             )
                             showFilterCard = false
                         },
@@ -194,19 +201,53 @@ fun EventListScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // --- Year Filter Row ---
+        val years = viewModel.getYears()
+        if (years.isNotEmpty()) {
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                years.forEach { year ->
+                    Button(
+                        onClick = {
+                            selectedYear = year
+                            viewModel.applyFilters(
+                                searchQuery = query,
+                                month = selectedMonth,
+                                maxCost = maxCost.toIntOrNull() ?: Int.MAX_VALUE,
+                                year = selectedYear
+                            )
+                        }
+                    ) {
+                        Text(year.toString())
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+
         // EVENT LIST
         if (events.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 Text("No events found")
             }
         } else {
-            EventListContent(
-                events = events,
-                onEventClick = onEventClick
-            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(events) { event ->
+                    EventCard(event) { onEventClick(event.id) }
+                }
+            }
         }
     }
 }
