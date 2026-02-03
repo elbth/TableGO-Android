@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,6 +40,8 @@ fun EventDetailScreen(
     val event by viewModel.event.collectAsState()
     val reviews by viewModel.reviews.collectAsState()
     var showReviewSheet by remember { mutableStateOf(false) }
+    var selectedSort by remember { mutableStateOf(EventDetailViewModel.ReviewSort.NEWEST) }
+
 
     // this runs one the screen opens because we can't load data directly during composition
     // also, side effects must live in LaunchedEffect - load data ONCE when screen opens
@@ -55,64 +60,100 @@ fun EventDetailScreen(
         }
         return
     }
+
     event?.let { e ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Main content scrollable column
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
 
-            Text(
-                text = e.name,
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            Text(text = "Date: ${e.date}")
-            Text(text = "Table Cost: $${e.cost}")
-
-            Divider()
-
-            Text(
-                text = e.description,
-                style = MaterialTheme.typography.bodyLarge
-            )
-
-            Spacer(Modifier.height(16.dp))
-            // event reviews
-            Divider(modifier = Modifier.padding(vertical = 16.dp))
-
-            Text(
-                text = "Reviews",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(Modifier.height(8.dp))
-
-            // NEW
-            if (reviews.isEmpty()) {
                 Text(
-                    text = "No reviews yet",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = e.name,
+                    style = MaterialTheme.typography.headlineMedium
                 )
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(reviews) { review ->
-                        ReviewItem(review)
+
+                Text(text = "Date: ${e.date}")
+                Text(text = "Table Cost: $${e.cost}")
+
+                Divider()
+
+                Text(
+                    text = e.description,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                Spacer(Modifier.height(16.dp))
+                // event reviews
+                Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+                Text(
+                    text = "Reviews",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                // review sort buttons
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = {
+                            selectedSort = EventDetailViewModel.ReviewSort.NEWEST
+                            viewModel.sortReviews(selectedSort)
+                        },
+                        colors = if (selectedSort == EventDetailViewModel.ReviewSort.NEWEST) ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ) else ButtonDefaults.buttonColors()
+                    ) {
+                        Text("Newest")
+                    }
+
+                    Button(
+                        onClick = {
+                            selectedSort = EventDetailViewModel.ReviewSort.HIGHEST_RATED
+                            viewModel.sortReviews(selectedSort)
+                        },
+                        colors = if (selectedSort == EventDetailViewModel.ReviewSort.HIGHEST_RATED) ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ) else ButtonDefaults.buttonColors()
+                    ) {
+                        Text("Highest Rated")
+                    }
+                }
+
+//            Button(onClick = { showReviewSheet = true }) {
+//                Text("Add Review")
+//            }
+
+                if (reviews.isEmpty()) {
+                    Text(
+                        text = "No reviews yet",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        reviews.forEach { review ->
+                            ReviewItem(review)
+                        }
                     }
                 }
             }
-
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Button(onClick = { showReviewSheet = true }) {
-                Text("Add Review")
+            // Floating button at bottom right
+            FloatingActionButton(
+                onClick = { showReviewSheet = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Review")
             }
         }
     }

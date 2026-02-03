@@ -19,6 +19,9 @@ class EventDetailViewModel(
     private val _reviews = MutableStateFlow<List<Review>>(emptyList())
     val reviews: StateFlow<List<Review>> = _reviews
 
+    // track current sort
+    private var currentSort: ReviewSort = ReviewSort.NEWEST
+
     fun loadEvent(eventId: Int) {
         _event.value = eventRepository.getEventById(eventId)
         loadReviews(eventId)
@@ -28,8 +31,8 @@ class EventDetailViewModel(
         viewModelScope.launch {
             reviewRepository
                 .getReviewsForEvent(eventId)
-                .collectLatest {
-                _reviews.value = it
+                .collectLatest { list ->
+                    _reviews.value = applySort(list, currentSort)
             }
         }
     }
@@ -38,17 +41,31 @@ class EventDetailViewModel(
         eventId: Int,
         title: String,
         rating: Int,
-        body: String
-    ) {
-        val newReview = Review(
-            id = _reviews.value.size + 1,
-            eventId = eventId,
-            title = title,
-            rating = rating,
-            body = body
-        )
+        body: String) {
         viewModelScope.launch {
+            val newReview = Review(
+                id = _reviews.value.size + 1,
+                eventId = eventId,
+                title = title,
+                rating = rating,
+                body = body
+            )
             reviewRepository.addReview(newReview)
+            loadReviews(eventId)
+        }
+    }
+
+    enum class ReviewSort { NEWEST, HIGHEST_RATED }
+
+    fun sortReviews(sort: ReviewSort) {
+        currentSort = sort
+        _reviews.value = applySort(_reviews.value, sort)
+    }
+
+    private fun applySort(list: List<Review>, sort: ReviewSort): List<Review> {
+        return when (sort) {
+            ReviewSort.NEWEST -> list.sortedByDescending { it.createdAt }
+            ReviewSort.HIGHEST_RATED -> list.sortedByDescending { it.rating }
         }
     }
 }
