@@ -5,5 +5,6 @@ data class Review(
     val eventId: Int,
     val title: String,
     val rating: Int,
-    val body: String
+    val body: String,
+    val createdAt: Long = System.currentTimeMillis()
 )

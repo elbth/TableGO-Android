@@ -1,14 +1,16 @@
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tablego.data.*
+import com.example.tablego.data.local.AppDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class EventDetailViewModel(
-    private val eventRepository: EventRepository = FakeEventRepository(),
-    private val reviewRepository: ReviewRepository = FakeReviewRepository()
+    private val eventRepository: EventRepository,
+    private val reviewRepository: ReviewRepository
 ) : ViewModel() {
 
     private val _event = MutableStateFlow<Event?>(null)
@@ -24,7 +26,9 @@ class EventDetailViewModel(
 
     private fun loadReviews(eventId: Int) {
         viewModelScope.launch {
-            reviewRepository.getReviewsForEvent(eventId).collectLatest {
+            reviewRepository
+                .getReviewsForEvent(eventId)
+                .collectLatest {
                 _reviews.value = it
             }
         }
@@ -43,9 +47,8 @@ class EventDetailViewModel(
             rating = rating,
             body = body
         )
-        reviewRepository.addReview(newReview)
-        // manually trigger a reload
-        loadReviews(eventId)
-
+        viewModelScope.launch {
+            reviewRepository.addReview(newReview)
+        }
     }
 }

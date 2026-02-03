@@ -1,21 +1,38 @@
 package com.example.tablego.ui
 
 import EventDetailViewModel
+import EventDetailViewModelFactory
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tablego.data.FakeEventRepository
+import com.example.tablego.data.RoomReviewRepository
+import com.example.tablego.data.local.AppDatabase
 
 @Composable
 fun EventDetailScreen(
     eventId: Int,
-    viewModel: EventDetailViewModel = viewModel()
+    onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val viewModel: EventDetailViewModel = viewModel(
+        factory = EventDetailViewModelFactory(
+            eventRepository = FakeEventRepository(),
+            reviewRepository = RoomReviewRepository(
+                AppDatabase.getInstance(context).reviewDao()
+            )
+        )
+    )
 
     val event by viewModel.event.collectAsState()
     val reviews by viewModel.reviews.collectAsState()
@@ -45,6 +62,10 @@ fun EventDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+
             Text(
                 text = e.name,
                 style = MaterialTheme.typography.headlineMedium

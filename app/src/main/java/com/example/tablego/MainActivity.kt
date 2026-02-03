@@ -44,9 +44,14 @@ fun AppNavHost() {
         }
         composable("event_detail/{eventId}") { backStackEntry ->
             // retrieve parameters for destination screen AKA event ID
-            val eventId = backStackEntry.arguments?.getString("eventId")?.toInt() ?: 0
+            val eventId = backStackEntry.arguments
+                ?.getString("eventId")
+                ?.toInt() ?: 0
             // Handle event details screen
-            EventDetailScreen(eventId = eventId)
+            EventDetailScreen(
+                eventId = eventId,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 
