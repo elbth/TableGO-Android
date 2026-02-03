@@ -2,7 +2,9 @@ package com.example.tablego.ui
 
 import EventDetailViewModel
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +59,8 @@ fun EventDetailScreen(
                 text = e.description,
                 style = MaterialTheme.typography.bodyLarge
             )
+
+            Spacer(Modifier.height(16.dp))
             // event reviews
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
@@ -64,12 +68,25 @@ fun EventDetailScreen(
                 text = "Reviews",
                 style = MaterialTheme.typography.titleMedium
             )
+            Spacer(Modifier.height(8.dp))
 
-// Temporary empty state
-            Text(
-                text = "No reviews yet",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // NEW
+            if (reviews.isEmpty()) {
+                Text(
+                    text = "No reviews yet",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(reviews) { review ->
+                        ReviewItem(review)
+                    }
+                }
+            }
+
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -83,7 +100,12 @@ fun EventDetailScreen(
         AddReviewBottomSheet(
             onDismiss = { showReviewSheet = false },
             onSubmit = { title, rating, body ->
-                // for now just log / store locally later
+                viewModel.addReview(
+                    eventId = event!!.id,
+                    title = title,
+                    rating = rating,
+                    body = body
+                )
                 showReviewSheet = false
             }
         )

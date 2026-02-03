@@ -44,5 +44,8 @@ class EventDetailViewModel(
             body = body
         )
         reviewRepository.addReview(newReview)
+        // manually trigger a reload
+        loadReviews(eventId)
+
     }
 }
