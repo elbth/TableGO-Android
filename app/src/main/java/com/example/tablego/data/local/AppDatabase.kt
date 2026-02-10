@@ -8,24 +8,29 @@ import com.example.tablego.data.local.dao.ReviewDao
 import com.example.tablego.data.local.entity.ReviewEntity
 
 @Database(
-    entities = [ReviewEntity::class],
-    version = 1,
+    entities = [EventEntity::class, ReviewEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun reviewDao(): ReviewDao
+    abstract fun eventDao(): EventDao
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
 
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                INSTANCE ?: Room.databaseBuilder(
+                val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "tablego.db"
-                ).build().also { INSTANCE = it }
+                    "app_database"
+                )
+                    .fallbackToDestructiveMigration() // <- wipes DB if schema changes (good for dev)
+                    .build()
+                INSTANCE = instance
+                instance
             }
         }
     }

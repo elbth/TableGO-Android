@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class EventListViewModel(
-    private val repository: EventRepository = FakeEventRepository()
+    private val eventRepository: EventRepository
 ) : ViewModel() {
 
     // Current list shown in UI
@@ -27,7 +27,7 @@ class EventListViewModel(
 
     private fun loadEvents() {
         viewModelScope.launch {
-            repository.getEvents().collect { list ->
+            eventRepository.getEvents().collect { list ->
                 allEvents = list
                 _events.value = list
             }
@@ -64,4 +64,26 @@ class EventListViewModel(
             event.date.takeLast(4).toIntOrNull()
         }.distinct().sorted()
     }
+
+    // add event to event list and database
+    fun addEvent(
+        name: String,
+        date: String,
+        cost: Int,
+        description: String
+    ) {
+        viewModelScope.launch {
+
+            val newEvent = Event(
+                id = events.value.size + 1,
+                name = name,
+                date = date,
+                cost = cost,
+                description = description
+            )
+
+            eventRepository.addEvent(newEvent)
+        }
+    }
+
 }

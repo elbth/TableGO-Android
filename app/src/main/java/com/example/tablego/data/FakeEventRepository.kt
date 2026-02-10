@@ -34,6 +34,7 @@ class FakeEventRepository : EventRepository {
 
     private val eventsFlow = MutableStateFlow(sampleEvents)
 
+    private val events = mutableListOf<Event>()
 
     // returns all events to event list screen
     // enforces encapsulation
@@ -41,11 +42,11 @@ class FakeEventRepository : EventRepository {
 
 
     // returns one event to event details screen
-    override fun getEventById(id: Int): Event? {
+    override suspend fun getEventById(id: Int): Event? {
         return eventsFlow.value.find { it.id == id }
     }
 
-    override fun searchEvents(
+    fun searchEvents(
         query: String,
         month: String,
         maxCost: Int,
@@ -59,4 +60,8 @@ class FakeEventRepository : EventRepository {
         }
         return MutableStateFlow(filtered)
     }
+    override suspend fun addEvent(event: Event) {
+        events.add(event)
+    }
+
 }

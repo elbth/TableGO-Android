@@ -22,7 +22,7 @@ class EventDetailViewModel(
     // track current sort
     private var currentSort: ReviewSort = ReviewSort.NEWEST
 
-    fun loadEvent(eventId: Int) {
+    suspend fun loadEvent(eventId: Int) {
         _event.value = eventRepository.getEventById(eventId)
         loadReviews(eventId)
     }
