@@ -38,31 +38,6 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.FloatingActionButton
 import com.example.tablego.ui.AddEventBottomSheet
 
-
-// PREVIEW DATA
-// dummy events for preview only
-private val fakeEvents = listOf(
-    Event(id = 1, name = "Art Market", date = "Jan. 12-13, 2025", cost = 50, description = "Large" +
-            " anime convention with high foot traffic."
-    ),
-    Event(id = 2, name = "Comic Con", date = "Feb. 3-5, 2025", cost = 100, description = "Small " +
-            "local market with handmade goods."
-    ),
-    Event(id = 3, name = "Music Festival", date = "Mar. 15-16, 2025", cost = 75, description = "Multi-day comic expo with national vendors."
-    )
-)
-
-// PREVIEWS
-@Preview(showBackground = true)
-@Composable
-fun EventListPreview() {
-    MaterialTheme {
-        EventListContent(
-            events = fakeEvents,
-            onEventClick = {}
-        )
-    }
-}
 // REUSABLE CONTENT
 // IDE-only preview
 @Composable

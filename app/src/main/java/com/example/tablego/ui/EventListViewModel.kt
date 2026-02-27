@@ -3,7 +3,6 @@ package com.example.tablego.ui
 import androidx.lifecycle.ViewModel
 import com.example.tablego.data.Event
 import com.example.tablego.data.EventRepository
-import com.example.tablego.data.FakeEventRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import androidx.lifecycle.viewModelScope

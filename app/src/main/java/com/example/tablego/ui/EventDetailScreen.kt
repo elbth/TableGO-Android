@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tablego.data.FakeEventRepository
+import com.example.tablego.data.RoomEventRepository
 import com.example.tablego.data.RoomReviewRepository
 import com.example.tablego.data.local.AppDatabase
 
@@ -30,7 +31,9 @@ fun EventDetailScreen(
 
     val viewModel: EventDetailViewModel = viewModel(
         factory = EventDetailViewModelFactory(
-            eventRepository = FakeEventRepository(),
+            eventRepository = RoomEventRepository(
+                AppDatabase.getInstance(context).eventDao()
+            ),
             reviewRepository = RoomReviewRepository(
                 AppDatabase.getInstance(context).reviewDao()
             )
